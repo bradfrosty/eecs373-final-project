@@ -69,13 +69,15 @@ void home() {
 	return;
 }
 
-//intialize screen to display game title and teams labels
+//initialize screen to display game title and teams labels
 void initScreen() {
 	uint8_t title[15] = "373 Air Hockey";
 	uint8_t teams[15] = "Player     Bot";
 
 	uint8_t setTitleCursor = 0x83; //set cursor to position 4 on first line
 	uint8_t setTeamCursor = 0xC2; //set cursor to position 3 on second line
+	botScore = SCORE0;
+	playerScore = SCORE0;
 
 
 	/******************************************/
@@ -117,36 +119,33 @@ void backspace() {
 	return;
 }
 
-
+uint8_t prevDigitBotCursor = 0xA1;
 void updateScore(uint8_t player) {
+
 
 	if(player == BOT) {
 		command();
-		MSS_UART_polled_tx( &g_mss_uart1, &setBotScoreCursor, sizeof(setBotScoreCursor));
+		MSS_UART_polled_tx( &g_mss_uart1, &(setBotScoreCursor), sizeof(setBotScoreCursor));
 		delay();
 		++botScore;
 		if(botScore < 0x3A){ //if botscore remains in number range
-			//moveCursor(CURSORRIGHT);
-			backspace();
-			//moveCursor(CURSORLEFT);
 			command();
+			MSS_UART_polled_tx( &g_mss_uart1, &setBotScoreCursor, sizeof(setBotScoreCursor));
+			//delay();
 			MSS_UART_polled_tx( &g_mss_uart1, &botScore, sizeof(botScore));
-			delay();
+			//delay();
 		}
 		else {
+			command();
+			MSS_UART_polled_tx( &g_mss_uart1, &(prevDigitBotCursor), sizeof(prevDigitBotCursor));
 			++prevDigitBot;
-			++setBotScoreCursor;
-			backspace();
-			delay();
-			command();
-			delay();
+			//backspace();
+			//delay();
 			MSS_UART_polled_tx( &g_mss_uart1, &prevDigitBot, sizeof(prevDigitBot));
-			delay();
-			moveCursor(CURSORRIGHT);
-			delay();
+			//delay();
+			//moveCursor(CURSORRIGHT);
 			botScore = SCORE0;
-			command();
-			delay();
+			//delay();
 			MSS_UART_polled_tx( &g_mss_uart1, &botScore, sizeof(botScore));
 			delay();
 		}
@@ -159,7 +158,7 @@ void updateScore(uint8_t player) {
 		++playerScore;
 		if(playerScore < 0x3A){ //if botscore remains in number range
 			backspace();
-			command();
+
 			MSS_UART_polled_tx( &g_mss_uart1, &playerScore, sizeof(playerScore));
 			delay();
 		}
