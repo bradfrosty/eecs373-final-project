@@ -1,4 +1,7 @@
-#include "mss_uart.h"
+#ifndef LCDFILE_H
+#define LCDFILE_H
+
+#include "drivers/mss_uart/mss_uart.h"
 
 #define BYTE 8
 #define CHARCOMMAND 0xFE
@@ -51,5 +54,7 @@ void clearDisp(void);
 void home(void);
 void initScreen(void);
 void moveCursor(uint8_t);
-void delete(void);
+void backspace(void);
 void updateScore(uint8_t);
+
+#endif

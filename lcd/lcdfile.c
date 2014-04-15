@@ -1,4 +1,5 @@
-#include "mss_uart.h"
+#include "drivers/mss_uart/mss_uart.h"
+#include "lcdfile.h"
 
 
 void initLCD(void)
@@ -109,9 +110,10 @@ void moveCursor(uint8_t dir) {
 	return;
 }
 
-void delete() {
+void backspace() {
+	uint8_t spaceChar[1] = " ";
 	moveCursor(CURSORLEFT);
-	MSS_UART_polled_tx( &g_mss_uart1, &space, sizeof(&space));
+	MSS_UART_polled_tx( &g_mss_uart1, spaceChar, sizeof(spaceChar));
 	return;
 }
 
@@ -125,7 +127,7 @@ void updateScore(uint8_t player) {
 		++botScore;
 		if(botScore < 0x3A){ //if botscore remains in number range
 			//moveCursor(CURSORRIGHT);
-			delete();
+			backspace();
 			//moveCursor(CURSORLEFT);
 			command();
 			MSS_UART_polled_tx( &g_mss_uart1, &botScore, sizeof(botScore));
@@ -134,7 +136,7 @@ void updateScore(uint8_t player) {
 		else {
 			++prevDigitBot;
 			++setBotScoreCursor;
-			delete();
+			backspace();
 			delay();
 			command();
 			delay();
@@ -156,7 +158,7 @@ void updateScore(uint8_t player) {
 		delay();
 		++playerScore;
 		if(playerScore < 0x3A){ //if botscore remains in number range
-			delete();
+			backspace();
 			command();
 			MSS_UART_polled_tx( &g_mss_uart1, &playerScore, sizeof(playerScore));
 			delay();
@@ -164,7 +166,7 @@ void updateScore(uint8_t player) {
 		else {
 			++prevDigitPlayer;
 			++setPlayerScoreCursor;
-			delete();
+			backspace();
 			command();
 			MSS_UART_polled_tx( &g_mss_uart1, &prevDigitPlayer, sizeof(prevDigitPlayer));
 			moveCursor(CURSORRIGHT);
@@ -175,3 +177,4 @@ void updateScore(uint8_t player) {
 	}
 
 	return;
+}
