@@ -19,31 +19,31 @@ uint32_t N64_get_data() {
 	MYN64->data = 0x00000003;
 	uint32_t data = MYN64->data;
 
-	//printf("data:%d\n\r", data);
+	printf("data:%d\n\r", data);
 
 	int8_t x = (data & 0x0001FE00) >> 9;
 	int8_t y = (data & 0x000001FE) >> 1;
 
 	if (y < - 16) {
 		printf("GOING DOWN\n\r");
+		updateScore(BOT);
 		if (x < -16)
 			state.N64_dir = DOWN_LEFT;
 		else if (x > 16)
 			state.N64_dir = DOWN_RIGHT;
 		else {
 			state.N64_dir = DOWN;
-			updateScore(BOT);
 		}
 	}
 	else if (y > 16) {
 		printf("GOING UP\n\r");
+		updateScore(PLAYER);
 		if (x < -16)
 			state.N64_dir = UP_LEFT;
 		else if (x > 16)
 			state.N64_dir = UP_RIGHT;
 		else {
 			state.N64_dir = UP;
-			updateScore(PLAYER);
 		}
 	}
 	else {

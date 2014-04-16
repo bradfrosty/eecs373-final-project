@@ -35,19 +35,13 @@ void initLCD(void)
 	         MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT
 	     );
 
-
-
-	//MSS_UART_enable_irq( &g_mss_uart0,( MSS_UART_RBF_IRQ) );
-
-	//uint8_t phrase[12] = "Hello World!";
-
-	//delay();
+	delay();
 	home();
-	//delay();
+	delay();
 	clearDisp();
 	delay();
 	initScreen();
-	//delay();
+	delay();
 
 	return;
 }
@@ -55,8 +49,8 @@ void initLCD(void)
 //delay loop for screen transactions
 
 void delay() {
-	volatile int d;
 	int i, j;
+	volatile int d;
 	for(i=0;i<1000;++i) {
 		for(j=0; j<1000; ++j) {
 			d=0;
@@ -65,15 +59,14 @@ void delay() {
 
 }
 
-
 void delayLong() {
-	volatile int d;
 	int i, j;
+	volatile int d;
 	for(i=0;i<1000;++i) {
-			for(j=0; j<10000; ++j) {
-				d=0;
-			}
+		for(j=0; j<10000; ++j) {
+			d=0;
 		}
+	}
 
 }
 
@@ -85,27 +78,29 @@ void command(void) {
 
 //clear screen and move cursor to home position
 void clearDisp() {
-	command();
 	uint8_t clearDispCom = CLEAR;
+	command();
 	MSS_UART_polled_tx( &g_mss_uart1, &clearDispCom, sizeof(clearDispCom));
 	return;
 }
 
 //move cursor to home position w/o clearing screen
 void home() {
-	command();
 	uint8_t homeCom = HOME;
+	command();
 	MSS_UART_polled_tx( &g_mss_uart1, &homeCom, sizeof(homeCom));
 	return;
 }
 
-//intialize screen to display game title and teams labels
+//initialize screen to display game title and teams labels
 void initScreen() {
 	uint8_t title[15] = "373 Air Hockey";
 	uint8_t teams[15] = "Player     Bot";
 
 	uint8_t setTitleCursor = 0x83; //set cursor to position 4 on first line
 	uint8_t setTeamCursor = 0xC2; //set cursor to position 3 on second line
+	Bot.score = SCORE0;
+	Player.score = SCORE0;
 
 
 	/******************************************/
@@ -147,35 +142,34 @@ void backspace() {
 	return;
 }
 
-
+uint8_t prevDigitBotCursor = 0xA1;
+uint8_t prevDigitPlayerCursor = 0x97;
 void updateScore(uint8_t player) {
+
 
 	if(player == BOT) {
 		command();
-		MSS_UART_polled_tx( &g_mss_uart1, &Bot.cursor, sizeof(Bot.cursor));
+		MSS_UART_polled_tx( &g_mss_uart1, &(Bot.cursor), sizeof(Bot.cursor));
 		delay();
 		++Bot.score;
 		if(Bot.score < 0x3A){ //if botscore remains in number range
-			//moveCursor(CURSORRIGHT);
-			backspace();
-			//moveCursor(CURSORLEFT);
 			command();
+			MSS_UART_polled_tx( &g_mss_uart1, &Bot.cursor, sizeof(Bot.cursor));
+			//delay();
 			MSS_UART_polled_tx( &g_mss_uart1, &Bot.score, sizeof(Bot.score));
-			delay();
+			//delay();
 		}
 		else {
+			command();
+			MSS_UART_polled_tx( &g_mss_uart1, &(prevDigitBotCursor), sizeof(prevDigitBotCursor));
 			++Bot.prev_Digit;
-			backspace();
-			delay();
-			command();
-			delay();
+			//backspace();
+			//delay();
 			MSS_UART_polled_tx( &g_mss_uart1, &Bot.prev_Digit, sizeof(Bot.prev_Digit));
-			delay();
-			moveCursor(CURSORRIGHT);
-			delay();
+			//delay();
+			//moveCursor(CURSORRIGHT);
 			Bot.score = SCORE0;
-			command();
-			delay();
+			//delay();
 			MSS_UART_polled_tx( &g_mss_uart1, &Bot.score, sizeof(Bot.score));
 			delay();
 		}
@@ -187,21 +181,24 @@ void updateScore(uint8_t player) {
 		delay();
 		++Player.score;
 		if(Player.score < 0x3A){ //if botscore remains in number range
-			backspace();
 			command();
+			MSS_UART_polled_tx( &g_mss_uart1, &Player.cursor, sizeof(Player.cursor));
 			MSS_UART_polled_tx( &g_mss_uart1, &Player.score, sizeof(Player.score));
 			delay();
 		}
 		else {
+			command();
+			MSS_UART_polled_tx( &g_mss_uart1, &(prevDigitPlayerCursor), sizeof(prevDigitPlayerCursor));
 			++Player.prev_Digit;
-			++Player.cursor;
-			backspace();
-			command();
+			//backspace();
+			//delay();
 			MSS_UART_polled_tx( &g_mss_uart1, &Player.prev_Digit, sizeof(Player.prev_Digit));
-			moveCursor(CURSORRIGHT);
+			//delay();
+			//moveCursor(CURSORRIGHT);
 			Player.score = SCORE0;
-			command();
+			//delay();
 			MSS_UART_polled_tx( &g_mss_uart1, &Player.score, sizeof(Player.score));
+			delay();
 		}
 	}
 

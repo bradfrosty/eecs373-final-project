@@ -15,12 +15,8 @@ state_t state;
 
 int main() {
 	/*********************** DEBUGGING CODE ***********************/
-	//init_N64();
+	init_N64();
 	initLCD();
-
-	int i = 0;
-	for (i = 0; i < 10; ++i)
-		updateScore(BOT);
 
 	while(1) {}
 
