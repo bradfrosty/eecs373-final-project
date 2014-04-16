@@ -13,8 +13,8 @@ output reg [31:0] PRDATA, // data to processor from I/O device (32-bits)
 
 /*** I/O ports ***/
 inout wire N64_data,
-output wire FABINT,
-output wire test
+output reg FABINT,
+output reg test
 );
 
 assign PREADY = 1'b1;
@@ -39,31 +39,42 @@ reg [31:0] recieve_counter = 0;
 wire WRITE_EN;
 assign WRITE_EN = (PENABLE && PWRITE && PSEL);
 
-parameter interupt_period = 1000000000;
+reg [31:0] interupt_period = 10000000;
 //FABINT TIMER
-reg [32:0] interupt_timer = 0;
+reg [31:0] interupt_timer = 0;
 reg interupt_timer_reset = 0;
 
-always@* begin
+always@(posedge PCLK) begin
 if (WRITE_EN && (PADDR[3:2] == 2'b01))
 	N64_enable <= PWDATA[0];
 end
 
-
+reg FABINT_reg = 0;
 always@(posedge PCLK) begin
-if (interupt_timer_reset) begin
+if (~PRESERN) begin
+	FABINT <= 1'b0;
+	interupt_timer_reset <= 1'b0;
+	interupt_timer <= 1'b0;
+	interupt_period <= 10000000;
+end
+else if (interupt_timer_reset) begin
 	interupt_timer <= 0;
 	interupt_timer_reset <= 0;
 end
 else if (N64_enable) begin
-	interupt_timer <= interupt_timer + 1;
-	if (interupt_timer == interupt_period) 
+	if (interupt_timer == interupt_period) begin 
 		interupt_timer_reset <= 1;
-end
+		FABINT <= 1'b1;
+		test <= 1'b1;
+	end
+	else begin
+		FABINT <= 1'b0;
+		test <= 1'b0;
+		interupt_timer <= interupt_timer + 1;
+	end
 end
 
-assign FABINT = (interupt_timer == interupt_period) ? 1'b1 : 1'b0;
-assign test = (interupt_timer == interupt_period) ? 1'b1 : 1'b0;
+end
 
 
 
@@ -122,7 +133,7 @@ else begin
 	else
 		recieve_counter_reset <= 0;
 
-	if (bits_recieved >= 33 && recieving_data) begin
+	if (bits_recieved >= 32 && recieving_data) begin
 		PRDATA <= N64_reg_out;
 		recieving_data <= 0;
 		bits_recieved <= 0;
@@ -157,6 +168,7 @@ else begin
 	if (WRITE_EN && ~sending_data) begin
 		sending_data <= 1;
 		recieving_data <= 0;
+		bits_recieved <= 0;
 		send_counter_reset <= 1;
 		bits_sent <= 0;
 		PRDATA <= N64_reg_out;
