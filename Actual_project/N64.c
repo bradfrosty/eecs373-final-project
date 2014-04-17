@@ -1,8 +1,9 @@
 #include "N64.h"
 #include "lcd.h"
-#include "state.h"
+#include "motors.h"
 
 #include <stdint.h>
+#include <stdio.h>
 
 void init_N64() {
 	MYN64->enable = 1;
@@ -16,8 +17,10 @@ void disable_N64() {
 int counter = 0;
 
 uint32_t N64_get_data() {
+	//send N64 data command
 	MYN64->data = 0x00000003;
 
+	//delay
 	int i, j;
 	volatile int d;
 	for (i = 0; i < 100; ++i) {
@@ -25,48 +28,42 @@ uint32_t N64_get_data() {
 			d = 1;
 	}
 
+	//grab N64 data
 	uint32_t data = MYN64->data;
 
-	printf("data:%d\n\r", data);
-
+	//extract analog x and y values
 	int8_t x = (data & 0x0000FF00) >> 8;
 	int8_t y = (data & 0x000000FF);
 
-	if (data & 0x80000000)
-		updateScore(BOT);
-	else if (data & 0x40000000)
-		updateScore(PLAYER);
-
-	if (y < - 16) {
-		printf("GOING DOWN\n\r");
-		//updateScore(BOT);
-		if (x < -16)
-			state.N64_dir = DOWN_LEFT;
-		else if (x > 16)
-			state.N64_dir = DOWN_RIGHT;
-		else {
-			state.N64_dir = DOWN;
-		}
+	//set motors direction MMIO
+	if (y < - 30) {
+		MYMOTORS->direction_y = REVERSE;
+		if (x < -30)
+			MYMOTORS->direction_x = REVERSE;
+		else if (x > 30)
+			MYMOTORS->direction_x = FORWARD;
+		else
+			MYMOTORS->direction_x = STOPPED;
 	}
-	else if (y > 16) {
-		printf("GOING UP\n\r");
-		//updateScore(PLAYER);
-		if (x < -16)
-			state.N64_dir = UP_LEFT;
-		else if (x > 16)
-			state.N64_dir = UP_RIGHT;
-		else {
-			state.N64_dir = UP;
-		}
+	else if (y > 30) {
+		MYMOTORS->direction_y = FORWARD;
+		if (x < -30)
+			MYMOTORS->direction_x = REVERSE;
+		else if (x > 30)
+			MYMOTORS->direction_x = FORWARD;
+		else
+			MYMOTORS->direction_x = STOPPED;
 	}
 	else {
-		if (x > 16)
-			state.N64_dir = RIGHT;
-		else if (x < -16)
-			state.N64_dir = LEFT;
+		MYMOTORS->direction_y = STOPPED;
+		if (x < -30)
+			MYMOTORS->direction_x = REVERSE;
+		else if (x > 30)
+			MYMOTORS->direction_x = FORWARD;
 		else
-			state.N64_dir = NONE;
+			MYMOTORS->direction_x = STOPPED;
 	}
+
 	return data;
 }
 
