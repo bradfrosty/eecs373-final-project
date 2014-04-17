@@ -13,8 +13,7 @@ output reg [31:0] PRDATA, // data to processor from I/O device (32-bits)
 
 /*** I/O ports ***/
 inout wire N64_data,
-output reg FABINT,
-output reg test
+output reg FABINT
 );
 
 assign PREADY = 1'b1;
@@ -65,11 +64,9 @@ else if (N64_enable) begin
 	if (interupt_timer == interupt_period) begin 
 		interupt_timer_reset <= 1;
 		FABINT <= 1'b1;
-		test <= 1'b1;
 	end
 	else begin
 		FABINT <= 1'b0;
-		test <= 1'b0;
 		interupt_timer <= interupt_timer + 1;
 	end
 end
