@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+static int dir_x = 0;
+static int dir_y = 0;
+
 void init_N64() {
 	MYN64->enable = 1;
 	NVIC_EnableIRQ(Fabric_IRQn);
@@ -37,31 +40,58 @@ uint32_t N64_get_data() {
 
 	//set motors direction MMIO
 	if (y < - 30) {
-		MYMOTORS->direction_y = REVERSE;
-		if (x < -30)
+		if (dir_y != -1) {
+			MYMOTORS->direction_y = REVERSE;
+			dir_y = -1;
+		}
+		if (x < -30 && dir_x != -1) {
 			MYMOTORS->direction_x = REVERSE;
-		else if (x > 30)
+			dir_x = -1;
+		}
+		else if (x > 30 && dir_x != 1) {
 			MYMOTORS->direction_x = FORWARD;
-		else
+			dir_x = 1;
+		}
+		else if (x > -30 && x < 30 && dir_x != 0) {
 			MYMOTORS->direction_x = STOPPED;
+			dir_x = 0;
+		}
 	}
 	else if (y > 30) {
-		MYMOTORS->direction_y = FORWARD;
-		if (x < -30)
-			MYMOTORS->direction_x = REVERSE;
-		else if (x > 30)
-			MYMOTORS->direction_x = FORWARD;
-		else
-			MYMOTORS->direction_x = STOPPED;
-	}
+			if (dir_y != 1) {
+				MYMOTORS->direction_y = FORWARD;
+				dir_y = 1;
+			}
+			if (x < -30 && dir_x != -1) {
+				MYMOTORS->direction_x = REVERSE;
+				dir_x = -1;
+			}
+			else if (x > 30 && dir_x != 1) {
+				MYMOTORS->direction_x = FORWARD;
+				dir_x = 1;
+			}
+			else if (x > -30 && x < 30 && dir_x != 0) {
+				MYMOTORS->direction_x = STOPPED;
+				dir_x = 0;
+			}
+		}
 	else {
-		MYMOTORS->direction_y = STOPPED;
-		if (x < -30)
+		if (dir_y != 0) {
+			MYMOTORS->direction_y = STOPPED;
+			dir_y = 0;
+		}
+		if (x < -30 && dir_x != -1) {
 			MYMOTORS->direction_x = REVERSE;
-		else if (x > 30)
+			dir_x = -1;
+		}
+		else if (x > 30 && dir_x != 1) {
 			MYMOTORS->direction_x = FORWARD;
-		else
+			dir_x = 1;
+			}
+		else if (x > -30 && x < 30 && dir_x != 0) {
 			MYMOTORS->direction_x = STOPPED;
+			dir_x = 0;
+		}
 	}
 
 	return data;

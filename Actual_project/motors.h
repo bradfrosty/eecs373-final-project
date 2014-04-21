@@ -5,7 +5,7 @@
 #define MOTORS_BASE (FPGA_FABRIC_BASE + 0x100)
 
 #define FORWARD 1
-#define STOPPED 0
+#define STOPPED 3
 #define REVERSE 2
 
 typedef struct {
